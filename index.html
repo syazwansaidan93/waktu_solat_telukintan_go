@@ -1,314 +1,141 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Waktu Solat Teluk Intan</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>" />
-    
-    <style>
-        /* Base styles */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f0f5;
-            background-image: linear-gradient(to top, #d0d0d5 0%, #f0f0f5 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 1rem;
-            box-sizing: border-box;
-            transition: background-color 0.5s ease, background-image 0.5s ease;
-        }
-        .container {
-            background-color: rgba(255, 255, 255, 0.75);
-            border-radius: 2.25rem;
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 20px 60px 0 rgba(0, 0, 0, 0.3);
-            padding: 1.5rem;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
-        }
-
-        /* Text colors */
-        .text-gray-800 { color: #111111; }
-        .text-blue-600 { color: #3a007a; }
-        .text-gray-600 { color: #333333; }
-        .text-gray-700 { color: #111111; }
-        .text-blue-700 { color: #5a0dad; }
-        .border-gray-200 { border-color: rgba(0, 0, 0, 0.25); }
-
-        /* Dark mode styles */
-        body.dark {
-            background-color: #1a1a1a;
-            background-image: linear-gradient(to top, #202020 0%, #1a1a1a 100%);
-        }
-        body.dark .container {
-            background-color: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            box-shadow: 0 20px 60px 0 rgba(0, 0, 0, 0.8);
-        }
-        body.dark .text-gray-800,
-        body.dark .text-gray-700 { color: #f5f5f5; }
-        body.dark .text-blue-600,
-        body.dark .text-blue-700 { color: #e0b0ff; }
-        body.dark .text-gray-600 { color: #dddddd; }
-        body.dark .border-gray-200 { border-color: rgba(255, 255, 255, 0.25); }
-
-        /* Specific element styling based on Tailwind classes */
-        h1 {
-            font-size: 2.25rem; /* text-4xl */
-            font-weight: 700; /* font-bold */
-            margin-bottom: 1.5rem; /* mb-6 */
-        }
-        h2 {
-            font-size: 1.5rem; /* text-2xl */
-            font-weight: 600; /* font-semibold */
-            margin-bottom: 1rem; /* mb-4 */
-        }
-        p#current-date {
-            margin-bottom: 0.5rem; /* mb-2 */
-        }
-        p#current-time {
-            margin-bottom: 1.5rem; /* mb-6 */
-            font-weight: 600; /* font-semibold */
-            font-size: 2.25rem; /* text-4xl */
-        }
-        #prayer-times {
-            display: flex; /* flex */
-            flex-direction: column; /* flex-col */
-            gap: 0.5rem; /* gap-2 */
-            text-align: left; /* text-left */
-        }
-        .prayer-item {
-            display: flex; /* flex */
-            justify-content: space-between; /* justify-between */
-            align-items: center; /* items-center */
-            padding-top: 0.5rem; /* py-2 */
-            padding-bottom: 0.5rem; /* py-2 */
-            border-bottom: 1px solid; /* border-b */
-            border-color: rgba(0, 0, 0, 0.25); /* border-gray-200 */
-            animation: fadeInUp 0.5s ease-out forwards;
-            opacity: 0;
-            border-left: 8px solid transparent;
-            padding-left: 1rem;
-            box-sizing: border-box;
-        }
-        .prayer-item span:first-child { /* Targets the name span */
-            font-weight: 500; /* font-medium */
-        }
-        .prayer-item span:last-child { /* Targets the time span */
-            font-weight: 600; /* font-semibold */
-            font-size: 1.25rem; /* text-xl */
-        }
-        #error-message {
-            margin-top: 1rem; /* mt-4 */
-        }
-        .hidden {
-            display: none;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .refresh-button {
-            background-color: rgba(255, 255, 255, 0.5);
-            color: #333333;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-            margin-top: 1.5rem;
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-
-        .refresh-button:hover {
-            background-color: rgba(255, 255, 255, 0.7);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-        }
-
-        .refresh-button:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        body.dark .refresh-button {
-            background-color: rgba(0, 0, 0, 0.4);
-            color: #f0f0f0;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        body.dark .refresh-button:hover {
-            background-color: rgba(0, 0, 0, 0.6);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-        }
-        body.dark .refresh-button:active {
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-        }
-
-        .highlight-prayer {
-            background-color: rgba(0, 0, 0, 0.05);
-            border-left: 8px solid rgba(0, 0, 0, 0.25);
-            padding-left: 1rem;
-            border-radius: 0.5rem;
-            transition: background-color 0.3s ease, border-left-color 0.3s ease;
-        }
-
-        body.dark .highlight-prayer {
-            background-color: rgba(255, 255, 255, 0.05);
-            border-left: 8px solid rgba(255, 255, 255, 0.25);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waktu Solat Teluk Intan</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+    .highlight-prayer {
+      border-left: 6px solid rgba(0, 0, 0, 0.3);
+      background: linear-gradient(to right, rgba(0,0,0,0.05), transparent);
+    }
+    .dark .highlight-prayer {
+      border-left: 6px solid rgba(255, 255, 255, 0.4);
+      background: linear-gradient(to right, rgba(255,255,255,0.07), transparent);
+    }
+  </style>
 </head>
-<body>
-    <div class="container">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Waktu Solat</h1>
-        <h2 class="text-2xl font-semibold text-blue-600 mb-4" id="location-name">Teluk Intan</h2>
-        <p class="text-gray-600 mb-2" id="current-date"></p>
-        <p class="text-600 mb-6 font-semibold text-4xl" id="current-time"></p>
+<body class="bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 font-[Inter] min-h-screen flex items-center justify-center p-4 transition-colors duration-500 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-800">
 
-        <div id="prayer-times" class="flex flex-col gap-2 text-left">
-        </div>
-
-        <div id="error-message" class="text-red-600 mt-4 hidden">
-            <p>Gagal memuat waktu solat. Sila cuba lagi nanti.</p>
-        </div>
-
-        <button id="refresh-button" class="refresh-button">Refresh Data</button>
+  <div class="w-full max-w-lg p-8 rounded-3xl bg-white/70 shadow-2xl backdrop-blur-xl border border-white/80 dark:bg-zinc-900/70 dark:border-zinc-800/80 dark:text-zinc-50 fade-in-up">
+    
+    <!-- Header -->
+    <div class="text-center mb-6">
+      <h1 class="text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100">🕌 Waktu Solat</h1>
+      <h2 id="location-name" class="text-xl font-semibold text-indigo-600 dark:text-indigo-400 mt-1">Teluk Intan</h2>
+      <p id="current-date" class="text-sm text-zinc-500 dark:text-zinc-400"></p>
+      <p id="current-time" class="text-5xl font-extrabold text-indigo-700 dark:text-indigo-300 mt-2"></p>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const locationNameElement = document.getElementById('location-name');
-            const currentDateElement = document.getElementById('current-date');
-            const currentTimeElement = document.getElementById('current-time');
-            const prayerTimesElement = document.getElementById('prayer-times');
-            const errorMessage = document.getElementById('error-message');
+    <!-- Prayer Times -->
+    <div id="prayer-times" class="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-700 rounded-xl overflow-hidden bg-white/40 dark:bg-zinc-800/40 shadow-inner">
+      <!-- Prayer items auto-generated -->
+    </div>
 
-            const refreshButton = document.getElementById('refresh-button');
+    <!-- Error Message -->
+    <div id="error-message" class="text-rose-500 mt-4 hidden text-center text-sm font-medium"></div>
 
-            const BACKEND_API_URL = '/api.php';
+    <!-- Refresh Button -->
+    <button id="refresh-button" class="w-full mt-6 px-6 py-3 rounded-xl border border-zinc-300 bg-white/70 text-zinc-700 font-semibold shadow-lg transition-all duration-300 hover:scale-105 hover:bg-white/90 active:scale-100 dark:bg-zinc-800/70 dark:text-zinc-100 dark:hover:bg-zinc-800/90 dark:border-zinc-600">
+      🔄 Refresh Data
+    </button>
+  </div>
 
-            const LOADING_DELAY_MS = 1500;
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const locationNameElement = document.getElementById('location-name');
+      const currentDateElement = document.getElementById('current-date');
+      const currentTimeElement = document.getElementById('current-time');
+      const prayerTimesElement = document.getElementById('prayer-times');
+      const errorMessage = document.getElementById('error-message');
+      const refreshButton = document.getElementById('refresh-button');
+      const BACKEND_API_URL = '/api/prayer-times';
+      const LOADING_DELAY_MS = 1500;
+      let globalPrayerTimes = [];
 
-            let globalPrayerTimes = [];
-
-            const applyHighlightFromBackend = () => {
-                document.querySelectorAll('.prayer-item').forEach(item => {
-                    item.classList.remove('highlight-prayer');
-                });
-
-                globalPrayerTimes.forEach((prayer, index) => {
-                    const prayerItems = document.querySelectorAll('.prayer-item');
-                    if (prayer.isHighlighted && prayerItems[index]) {
-                        prayerItems[index].classList.add('highlight-prayer');
-                    }
-                });
-            };
-
-            const applyTheme = (isDarkMode) => {
-                if (isDarkMode) {
-                    document.body.classList.add('dark');
-                } else {
-                    document.body.classList.remove('dark');
-                }
-                applyHighlightFromBackend();
-            };
-
-            const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-            applyTheme(prefersDarkScheme.matches);
-
-            prefersDarkScheme.addEventListener('change', (event) => {
-                applyTheme(event.matches);
-            });
-
-            const updateCurrentTime = () => {
-                const now = new Date();
-                // Use 'numeric' to remove leading zero for hours
-                const formattedTime = now.toLocaleTimeString('en-US', {
-                    hour: 'numeric', // Changed from '2-digit'
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: true
-                }).replace(/ (AM|PM)/, '');
-
-                currentTimeElement.textContent = formattedTime;
-                applyHighlightFromBackend();
-            };
-
-            const fetchDataFromBackend = async () => {
-                errorMessage.classList.add('hidden');
-                prayerTimesElement.innerHTML = '';
-                globalPrayerTimes = [];
-
-                try {
-                    const response = await fetch(BACKEND_API_URL);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-
-                    if (data.prayerTimes) {
-                        locationNameElement.textContent = 'Teluk Intan';
-                        currentDateElement.textContent = data.currentDate;
-                        currentTimeElement.textContent = data.currentTime;
-                        
-                        let delay = 0;
-                        data.prayerTimes.prayers.forEach(prayer => {
-                            const div = document.createElement('div');
-                            div.classList.add('flex', 'justify-between', 'items-center', 'py-2', 'border-b', 'border-gray-200', 'prayer-item');
-                            div.style.animationDelay = `${delay}s`;
-                            div.innerHTML = `
-                                <span class="text-gray-700 font-medium">${prayer.name}</span>
-                                <span class="text-blue-700 font-semibold text-xl">${prayer.time}</span>
-                            `;
-                            prayerTimesElement.appendChild(div);
-                            globalPrayerTimes.push(prayer);
-                            delay += 0.1;
-                        });
-                        applyHighlightFromBackend();
-                    } else {
-                        setTimeout(() => {
-                            errorMessage.textContent = 'Gagal memuat waktu solat dari server.';
-                            errorMessage.classList.remove('hidden');
-                        }, LOADING_DELAY_MS);
-                    }
-                } catch (error) {
-                    setTimeout(() => {
-                        errorMessage.textContent = `Gagal memuat data dari server: ${error.message}. Sila pastikan server PHP anda berjalan dan Nginx dikonfigurasi dengan betul.`;
-                        errorMessage.classList.remove('hidden');
-                    }, LOADING_DELAY_MS);
-                } finally {
-                    // No loading indicator to hide
-                }
-            };
-
-            refreshButton.addEventListener('click', () => {
-                fetchDataFromBackend();
-            });
-
-            fetchDataFromBackend();
-            setInterval(updateCurrentTime, 1000);
+      const applyHighlightFromBackend = () => {
+        document.querySelectorAll('.prayer-item').forEach(item => item.classList.remove('highlight-prayer'));
+        globalPrayerTimes.forEach((prayer, index) => {
+          const prayerItems = document.querySelectorAll('.prayer-item');
+          if (prayer.isHighlighted && prayerItems[index]) {
+            prayerItems[index].classList.add('highlight-prayer');
+          }
         });
-    </script>
+      };
+
+      const applyTheme = (isDarkMode) => {
+        if (isDarkMode) document.body.classList.add('dark');
+        else document.body.classList.remove('dark');
+        applyHighlightFromBackend();
+      };
+
+      const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+      applyTheme(prefersDarkScheme.matches);
+      prefersDarkScheme.addEventListener('change', (event) => applyTheme(event.matches));
+
+      const updateCurrentTime = () => {
+        const now = new Date();
+        const formattedTime = now.toLocaleTimeString('ms-MY', {
+          hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true
+        }).replace(/ (AM|PM)/, '');
+        currentTimeElement.textContent = formattedTime;
+        applyHighlightFromBackend();
+      };
+
+      const fetchDataFromBackend = async () => {
+        errorMessage.classList.add('hidden');
+        prayerTimesElement.innerHTML = '';
+        globalPrayerTimes = [];
+        try {
+          const response = await fetch(BACKEND_API_URL);
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          const data = await response.json();
+          if (data.prayerTimes) {
+            locationNameElement.textContent = 'Teluk Intan';
+            currentDateElement.textContent = data.currentDate;
+            currentTimeElement.textContent = data.currentTime;
+            let delay = 0;
+            data.prayerTimes.prayers.forEach(prayer => {
+              const div = document.createElement('div');
+              div.classList.add('flex','justify-between','items-center','py-3','px-4','prayer-item','transition','duration-300','hover:bg-indigo-50/50','dark:hover:bg-zinc-700/30');
+              div.style.animationDelay = `${delay}s`;
+              div.innerHTML = `
+                <span class="text-lg font-medium text-zinc-700 dark:text-zinc-300">${prayer.name}</span>
+                <span class="text-xl font-bold text-indigo-600 dark:text-indigo-300">${prayer.time}</span>
+              `;
+              prayerTimesElement.appendChild(div);
+              globalPrayerTimes.push(prayer);
+              delay += 0.05;
+            });
+            applyHighlightFromBackend();
+          } else {
+            setTimeout(() => {
+              errorMessage.textContent = 'Gagal memuat waktu solat dari server.';
+              errorMessage.classList.remove('hidden');
+            }, LOADING_DELAY_MS);
+          }
+        } catch (error) {
+          setTimeout(() => {
+            errorMessage.textContent = `Gagal memuat data: ${error.message}`;
+            errorMessage.classList.remove('hidden');
+          }, LOADING_DELAY_MS);
+        }
+      };
+
+      refreshButton.addEventListener('click', fetchDataFromBackend);
+      fetchDataFromBackend();
+      setInterval(updateCurrentTime, 1000);
+    });
+  </script>
 </body>
 </html>
