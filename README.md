@@ -40,6 +40,26 @@ A systemd service file is provided to manage the application.
 
 Create the `prayer-times-api.service` file to `/etc/systemd/system/`.
 
+Example systemd service file:
+
+```ini
+[Unit]
+Description=Prayer Times API Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/wan/go-solat
+ExecStart=/home/wan/go-solat/prayer-times-api
+Restart=always
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
 Reload the daemon, enable, and start the service:
 
 ```bash
