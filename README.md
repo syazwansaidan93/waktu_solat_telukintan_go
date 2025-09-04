@@ -1,178 +1,84 @@
 # Waktu Solat Teluk Intan
 
-This project provides a simple, elegant web application to display daily prayer times for Teluk Intan, Perak, Malaysia. It highlights the current prayer time and updates the current time in real-time.
+This is a simple web application that displays current prayer times for a specific location, built with a Go backend and a modern, interactive HTML frontend.
 
----
+## Features
 
-## ✨ Features
+* **Prayer Time Display**: Shows the five daily prayer times (Subuh, Zohor, Asar, Maghrib, Isyak).
+* **Dynamic Data**: Fetches prayer times from a Go API running on the backend.
+* **Real-time Clock**: Updates the current time every second.
+* **Interactive Highlighting**: Automatically highlights the current or upcoming prayer time.
+* **Responsive Design**: Looks great on both desktop and mobile devices.
+* **Dark Mode Support**: Adapts to the user's system preference for a comfortable viewing experience.
 
-* **Real-time Clock:** Displays the current time, updated every second.
-* **Dynamic Prayer Times:** Fetches and displays daily prayer times for Teluk Intan.
-* **Current Prayer Highlight:** Automatically highlights the current prayer time based on the actual time.
-* **Responsive Design:** Optimized for various screen sizes, including mobile devices.
-* **Light/Dark Mode:** Adapts to the user's system preference for light or dark mode.
-* **Refresh Button:** Manually refresh prayer time data from the backend.
+## Technology Stack
 
----
+### Frontend:
 
-## 💻 Technologies Used
+* HTML5
+* JavaScript (Vanilla JS for all logic)
+* Tailwind CSS (via CDN for styling)
 
-* **Frontend:**
-    * **HTML5:** Structure of the web page (single file).
-    * **CSS3:** Styling (inline within HTML).
-    * **JavaScript (Vanilla JS):** Client-side logic for fetching data, updating time, and handling UI interactions (inline within HTML).
-* **Backend:**
-    * **PHP:** Server-side scripting for fetching prayer times from an external API (`e-solat.gov.my`).
-    * **cURL (PHP Extension):** Used for making HTTP requests to external APIs.
-* **Web Server:**
-    * **Nginx:** Serves the HTML frontend and acts as a reverse proxy for the PHP backend using PHP-FPM.
-* **PHP FastCGI Process Manager (PHP-FPM):** Executes PHP scripts.
+### Backend:
 
----
+* Go (Golang) for the API server
 
-## 🚀 Setup Guide
+## How to Run
 
-Follow these steps to set up and run the application on your Debian-based server (e.g., Orange Pi Zero 3).
+### 1. Backend (Go API)
 
-### Prerequisites
+The Go backend must be running to provide the prayer time data. The API is expected to be accessible at `http://127.0.0.1:502/api/prayer-times`.
 
-Before you begin, ensure you have the following installed on your server:
-
-* **Nginx:** A high-performance web server.
-* **PHP 8.2 and PHP-FPM:** PHP runtime and its FastCGI Process Manager.
-* **PHP cURL extension:** Required by the PHP backend to make external API calls.
-
-You can install them using:
+Build the executable:
 
 ```bash
-sudo apt update
-sudo apt install nginx php8.2-fpm php8.2-curl -y
+go build -o prayer-times-api main.go
 ```
 
-### 1. Backend Setup (`api.php`)
+Run as a systemd service (recommended):
+A systemd service file is provided to manage the application.
 
-The PHP script fetches prayer times.
+Copy the `.service` file to `/etc/systemd/system/`.
 
-1.  **Create the web directory:**
-    ```bash
-    sudo mkdir -p /var/www/html/solat
-    ```
-2.  **Create the `api.php` file:**
-    ```bash
-    sudo nano /var/www/html/solat/api.php
-    ```
-3.  **Paste the PHP code (from our previous conversation) into `api.php`.**
-4.  **Set permissions for `api.php`:**
-    ```bash
-    sudo chmod 644 /var/www/html/solat/api.php
-    sudo chown www-data:www-data /var/www/html/solat/api.php
-    ```
-5.  **Restart PHP-FPM:**
-    ```bash
-    sudo systemctl restart php8.2-fpm
-    ```
+Reload the daemon, enable, and start the service:
 
-### 2. Frontend Setup (`index.html`)
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable prayer-times-api.service
+sudo systemctl start prayer-times-api.service
+```
 
-The frontend is a single HTML file containing all HTML, CSS, and JavaScript.
+### 2. Frontend (HTML)
 
-1.  **Create the `index.html` file:**
-    ```bash
-    sudo nano /var/www/html/solat/index.html
-    ```
-2.  **Paste the HTML code (from our previous conversation) into `index.html`.**
-3.  **Set permissions for `index.html`:**
-    ```bash
-    sudo chmod 644 /var/www/html/solat/index.html
-    sudo chown www-data:www-data /var/www/html/solat/index.html
-    ```
+The frontend is a single `index.html` file that communicates with the backend API.
 
-### 3. Nginx Configuration
+#### Nginx Configuration:
 
-Configure Nginx to serve your HTML file and pass PHP requests to PHP-FPM.
+The `index.html` file and other assets (if any) should be served by a web server like Nginx, which also acts as a reverse proxy for the API. An example Nginx configuration is provided to route requests to your Go backend.
 
-1.  **Edit your Nginx site configuration file:**
-    ```bash
-    sudo nano /etc/nginx/sites-available/default # Or your custom site file, e.g., /etc/nginx/sites-available/solat.home
-    ```
-2.  **Paste the following Nginx configuration:**
+```nginx
+server {
+    listen 80;
+    server_name solat.home solat.syazwansaidan.my;
+    root /var/www/html/solat;
+    index index.html;
 
-    ```nginx
-    server {
-        listen 80;
-        server_name solat.home; # Replace with your domain or server IP
-
-        location / {
-            root /var/www/html/solat;
-            index index.html index.htm;
-            try_files $uri $uri/ =404;
-        }
-
-        location ~ \.php$ {
-            root /var/www/html/solat;
-            try_files $uri =404;
-
-            fastcgi_split_path_info ^(.+\.php)(/.+)$;
-            
-            fastcgi_pass unix:/var/run/php/php8.2-fpm.sock; # Ensure this matches your PHP-FPM socket
-            fastcgi_index index.php;
-            include fastcgi_params;
-            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-            fastcgi_read_timeout 120;
-        }
+    location /api/ {
+        proxy_pass http://127.0.0.1:502;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
-    ```
-    * **Important:** Replace `solat.home` with your actual domain name or the IP address of your Orange Pi if you're accessing it directly by IP.
-    * Ensure `fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;` correctly points to your PHP 8.2 FPM socket.
-
-3.  **Test and reload Nginx:**
-    ```bash
-    sudo nginx -t
-    sudo systemctl reload nginx
-    ```
-
-### 4. Client-side Hosts File (if using `solat.home`)
-
-If you're accessing the application using `http://solat.home`, you need to map this hostname to your Orange Pi's IP address on your client machine (the computer you're browsing from).
-
-* **On Linux/macOS:** Edit `/etc/hosts`
-* **On Windows:** Edit `C:\Windows\System32\drivers\etc\hosts` (as administrator)
-
-Add the following line, replacing `YOUR_ORANGE_PI_IP` with your Orange Pi's actual IP address:
-
-```
-YOUR_ORANGE_PI_IP solat.home
+}
 ```
 
----
+## Customization
 
-## 🚀 Usage
+* **Location**: The prayer times are hardcoded for "Teluk Intan". You can modify the Go backend to accept a location parameter to serve other areas.
+* **Styling**: The frontend uses Tailwind CSS via CDN. You can easily adjust the theme and colors by changing the classes or the theme settings.
 
-After completing the setup:
+## Credits
 
-1.  Open your web browser.
-2.  Navigate to `http://solat.home` (or your Orange Pi's IP address if you used it in the Nginx config).
-
-The page should load, display the current date and time, and fetch the prayer times from the backend. The current prayer time will be highlighted.
-
----
-
-## 🔍 Troubleshooting
-
-* **404 Not Found for `api.php`:**
-    * Verify `api.php` exists at `/var/www/html/solat/api.php`.
-    * Check file and directory permissions (`sudo chmod 644 /var/www/html/solat/api.php` and `sudo chown www-data:www-data /var/www/html/solat/api.php`).
-    * Ensure PHP-FPM is running (`sudo systemctl status php8.2-fpm`).
-    * Check Nginx error logs (`sudo tail -f /var/log/nginx/error.log`) for specific errors.
-* **Empty Prayer Times / API returns empty `prayers` array:**
-    * The external `e-solat.gov.my` API might be down or returning unexpected data. Try accessing `https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&zone=PRK05&period=today` directly in your browser or with `curl` from your server to verify its status.
-    * Check PHP error logs (if configured) for issues during API fetching.
-* **"undefined" next to the time / incorrect time format:**
-    * Ensure your PHP backend is returning the time in `HH:MM:SS` format and your JavaScript is parsing it correctly (which it should be with the current code).
-    * Clear your browser cache.
-
----
-
-## 📄 License
-
-This project is open-source and available under the MIT License.
+* **Prayer Times Data**: Provided by a Go backend service.
+* **Icons**: Unicode character 🕌 for the favicon.
