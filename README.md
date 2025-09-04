@@ -38,7 +38,7 @@ go build -o prayer-times-api main.go
 Run as a systemd service (recommended):
 A systemd service file is provided to manage the application.
 
-Copy the `.service` file to `/etc/systemd/system/`.
+Create the `prayer-times-api.service` file to `/etc/systemd/system/`.
 
 Reload the daemon, enable, and start the service:
 
